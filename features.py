@@ -70,47 +70,47 @@ def get_all_pairs_3x(no_of_items):
 
 
 def two_rect_feature_v(a, b, c, d, int_image):
-    ab = (a + b) / 2
-    cd = (c + d) / 2
+    ab = mid_point(a, b)
+    cd = mid_point(c, d)
     grey = area_rectange(ab, b, c, cd, int_image)
     white = area_rectange(a, ab, cd, d, int_image)
     return grey - white 
 
 
 def two_rect_feature_h(a, b, c, d, int_image):
-    da = (a + d) / 2
-    bc = (b + c) / 2
+    da = mid_point(d, a)
+    bc = mid_point(b, c)
     grey = area_rectange(a, b, bc, da, int_image)
     white = area_rectange(da, bc, c, d, int_image)
     return grey - white 
 
 
 def three_rect_feature_v(a, b, c, d, int_image):
-    ab_1 = (2*a + b) / 3
-    ab_2 = (a + 2*b) / 3
-    cd_1 = (2*c + d) / 3
-    cd_2 = (c + 2*d) / 3
+    ab_1 = first_third(a, b)
+    ab_2 = second_third(a, b)
+    cd_1 = first_third(c, d)
+    cd_2 = second_third(c, d)
     grey = area_rectange(ab_1, ab_2, cd_1, cd_2, int_image)
     white = area_rectange(a, ab_1, cd_2, d, int_image) + area_rectange(ab_2, b, c, cd_1, int_image)
     return grey - white 
 
 
 def three_rect_feature_h(a, b, c, d, int_image):
-    bc_1 = (2*b + c) / 3
-    bc_2 = (b + 2*c) / 3
-    da_1 = (2*d + a) / 3
-    da_2 = (a + 2*d) / 3
+    bc_1 = first_third(b, c)
+    bc_2 = second_third(b, c)
+    da_1 = first_third(d, a)
+    da_2 = second_third(d, a)
     grey = area_rectange(da_2, bc_1, bc_2, da_1, int_image)
     white = area_rectange(a, b, bc_1, da_2, int_image) + area_rectange(da_1, bc_2, c, d, int_image)
     return grey - white 
 
 
 def four_rect_feature(a, b, c, d, int_image):
-    ab = (a + b)/2
-    bc = (b + c)/2
-    cd = (c + d)/2
-    da = (d + a)/2
-    o = (a + b + c + d)/4
+    ab = mid_point(a, b)
+    bc = mid_point(b, c)
+    cd = mid_point(c, d)
+    da = mid_point(d, a)
+    o = mid_point(ab, cd)
     grey = area_rectange(ab, b, bc, o, int_image) + area_rectange(da, o, cd, d, int_image)
     white = area_rectange(a, ab, o, da, int_image) + area_rectange(o, bc, c, cd, int_image)
     return grey - white 
@@ -122,3 +122,17 @@ def four_rect_feature(a, b, c, d, int_image):
 def area_rectange(a, b, c, d, int_image):
     return (int_image[c] - int_image[d]) - (int_image[b] - int_image[a])
 
+
+def mid_point(a, b):
+    sum = (a[0] + b[0], a[1] + b[1])
+    return (sum[0] // 2, sum[1] // 2)
+
+
+def first_third(a, b):
+    sum = (2 * a[0] + b[0], 2 * a[1] + b[1])
+    return (sum[0] // 3, sum[1] // 3)
+
+
+def second_third(a, b):
+    sum = (a[0] + 2 * b[0], a[1] + 2 * b[1])
+    return (sum[0] // 3, sum[1] // 3)
