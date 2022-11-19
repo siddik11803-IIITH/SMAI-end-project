@@ -7,23 +7,61 @@ import numpy as np
 #      - output: numpy 1d array of features 
 
 
-def get_features(image):
+def get_features(image, rectangles):
     int_image = caliculate_intergral_image(image)    
-    (length, bredth) = image.shape
-    rect_type1 = combine_pairs(get_all_pairs(length), get_all_pairs_2x(bredth))
-    fetures_type1 = [two_rect_feature_v(a, b, c, d, int_image) for a, b, c, d in rect_type1]
-    rect_type2 = combine_pairs(get_all_pairs_2x(length), get_all_pairs(bredth))
-    fetures_type2 = [two_rect_feature_h(a, b, c, d, int_image) for a, b, c, d in rect_type2]
-    rect_type3 = combine_pairs(get_all_pairs(length), get_all_pairs_3x(bredth))
-    fetures_type3 = [three_rect_feature_v(a, b, c, d, int_image) for a, b, c, d in rect_type3]
-    rect_type4 = combine_pairs(get_all_pairs_3x(length), get_all_pairs(bredth))
-    fetures_type4 = [three_rect_feature_h(a, b, c, d, int_image) for a, b, c, d in rect_type4]
-    rect_type5 = combine_pairs(get_all_pairs_2x(length), get_all_pairs_2x(bredth))
-    fetures_type5 = [four_rect_feature(a, b, c, d, int_image) for a, b, c, d in rect_type5]
+    fetures_type1 = [two_rect_feature_v(a, b, c, d, int_image) for a, b, c, d in rectangles[0]]
+    fetures_type2 = [two_rect_feature_h(a, b, c, d, int_image) for a, b, c, d in rectangles[1]]
+    fetures_type3 = [three_rect_feature_v(a, b, c, d, int_image) for a, b, c, d in rectangles[2]]
+    fetures_type4 = [three_rect_feature_h(a, b, c, d, int_image) for a, b, c, d in rectangles[3]]
+    fetures_type5 = [four_rect_feature(a, b, c, d, int_image) for a, b, c, d in rectangles[4]]
     features = fetures_type1 + fetures_type2 + fetures_type3 + fetures_type4 + fetures_type5
     return np.array(features)
 
 
+def get_rectanges(length, bredth):
+    rect_type1 = combine_pairs(get_all_pairs(length), get_all_pairs_2x(bredth))
+    rect_type2 = combine_pairs(get_all_pairs_2x(length), get_all_pairs(bredth))
+    rect_type3 = combine_pairs(get_all_pairs(length), get_all_pairs_3x(bredth))
+    rect_type4 = combine_pairs(get_all_pairs_3x(length), get_all_pairs(bredth))
+    rect_type5 = combine_pairs(get_all_pairs_2x(length), get_all_pairs_2x(bredth))
+    return [rect_type1, rect_type2, rect_type3, rect_type4, rect_type5]
+
+
+def get_nth_feature(Iimage, rectanges, n):
+    feature = 0
+    start1 = 0
+    start2 = start1 + len(rectanges[0])
+    start3 = start2 + len(rectanges[1])
+    start4 = start3 + len(rectanges[2])
+    start5 = start4 + len(rectanges[3])
+    start6 = start5 + len(rectanges[4])
+    if(n < start2):
+        idx = n - start1
+        nth_rect = rectanges[0][idx]
+        feature = two_rect_feature_v(nth_rect[0], nth_rect[1], nth_rect[2], nth_rect[3], Iimage)
+    elif(n < start3):
+        idx = n  - start2
+        nth_rect = rectanges[1][idx]
+        feature = two_rect_feature_h(nth_rect[0], nth_rect[1], nth_rect[2], nth_rect[3], Iimage)
+    elif(n < start4):
+        idx = n  - start3
+        nth_rect = rectanges[2][idx]
+        feature = three_rect_feature_v(nth_rect[0], nth_rect[1], nth_rect[2], nth_rect[3], Iimage)
+    elif(n < start5):
+        idx = n  - start4
+        nth_rect = rectanges[3][idx]
+        feature = three_rect_feature_h(nth_rect[0], nth_rect[1], nth_rect[2], nth_rect[3], Iimage)
+    elif(n < start6):
+        idx = n  - start5
+        nth_rect = rectanges[4][idx]
+        feature = four_rect_feature(nth_rect[0], nth_rect[1], nth_rect[2], nth_rect[3], Iimage)
+    else:
+        assert(False)
+    return feature
+        
+
+
+## Internal functions
 def caliculate_intergral_image(img):
     integral_img = np.zeros(img.shape)
     colum_sum = np.zeros(img.shape[1])

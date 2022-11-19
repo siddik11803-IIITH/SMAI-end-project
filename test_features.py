@@ -34,15 +34,20 @@ def test_get_pairs_23x(l):
     return True 
 
 
-def test_feature_anytype(a, b, c, d, int_image):
-    # every feature value is zero based on the input
-    pass
-
-
 def test_area_rectangle(a, b, c, d, int_image):
     delx = c[0] - a[0]
     dely = c[1] - a[1]
     assert(dely * delx == features.area_rectange(a, b, c, d, int_image))
+    return True
+
+
+def test_nth_feature(image):
+    Iimage = features.caliculate_intergral_image(image)
+    rectangles = features.get_rectanges(image.shape[0], image.shape[1])
+    all_features = features.get_features(image, rectangles)
+    for n in range(len(all_features)):
+        feature = features.get_nth_feature(Iimage, rectangles, n)
+        assert(abs(feature -  all_features[n]) < 1e-9)
     return True
 
 
@@ -85,6 +90,8 @@ def complete_test():
         
     for a, b, c, d in (rectangles_even + rectangles_odd):
         test_area_rectangle(a, b, c, d, int_image)
+
+    test_nth_feature(np.ones((l, l)))
     return
 
 
