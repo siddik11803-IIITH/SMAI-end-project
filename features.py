@@ -7,6 +7,13 @@ import numpy as np
 #      - output: numpy 1d array of features 
 
 
+def feature_extraction_images(Images, rect, no_rect):
+    Images_fe = np.zeros((Images.shape[0], no_rect))
+    for i in range(len(Images)):
+        Images_fe[i] = get_features(Images[i], rect)
+    return Images_fe
+
+
 def get_features(image, rectangles):
     int_image = caliculate_intergral_image(image)    
     fetures_type1 = [two_rect_feature_v(a, b, c, d, int_image) for a, b, c, d in rectangles[0]]
@@ -25,6 +32,14 @@ def get_rectanges(length, bredth):
     rect_type4 = combine_pairs(get_all_pairs_3x(length), get_all_pairs(bredth))
     rect_type5 = combine_pairs(get_all_pairs_2x(length), get_all_pairs_2x(bredth))
     return [rect_type1, rect_type2, rect_type3, rect_type4, rect_type5]
+
+
+def get_no_rectangles(length, bredth):
+    rectangles = get_rectanges(length, bredth)
+    ans = 0
+    for rects in rectangles:
+        ans += len(rects)
+    return ans
 
 
 def get_nth_feature(Iimage, rectanges, n):
