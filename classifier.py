@@ -9,12 +9,13 @@ class AdaBoostClassifier(object):
         self.aplhas = []
         self.weakclassifiers = []
         self.fitted = False
-        self.x_trainp = None
-        self.y_trainp = None
+        x_trainp = None
+        y_trainp = None
 
     def fit(self, X, y, iter):
         weights = self.init_weights(y)
-        errors_features, self.weakclassifiers = self.precompute(X, y)
+        # errors_features, self.weakclassifiers = self.precompute(X, y)
+        errors_features, self.weakclassifiers = self.precompute_parallelized_with_multiprocessing(X, y)
         self.selected_features, self.aplhas = self.train_helper(iter, errors_features, weights)
         self.fitted = True
 
@@ -73,23 +74,23 @@ class AdaBoostClassifier(object):
     #     clf_features = []
     #     thread = threading.Thread(target=self.precompute_single_clf_feature)
     #     thread.start()
-
-        
     #     return np.array(errors_features), clf_features
     
-
     def precompute_parallelized_with_multiprocessing(self,x_train,y_train):
-        self.x_trainp = x_train
-        self.y_trainp = y_train
+        self.x_trainp = x_train.copy()
+        self.y_trainp = y_train.copy()
         n_features = x_train.shape[1]
         try: 
             cpus = multiprocessing.cpu_count()
         except NotImplementedError:
             cpus = 2
+
+        print("Number of CPUs = ", cpus)
+        cpus = 4 # presently taking only 4 CPUs
+
         pool = multiprocessing.Pool(processes=cpus)
-
-        errors_features, clf_features = pool.map(self.precompute_single_clf_feature,range(n_features))
-
+        errors_features,clf_features = zip(*pool.map(self.precompute_single_clf_feature,range(n_features)))
+    
         return np.array(errors_features),clf_features
 
     def train_helper(self, iter, errors_features, weights):
