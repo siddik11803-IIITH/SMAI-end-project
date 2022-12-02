@@ -1,6 +1,7 @@
 from sklearn.tree import DecisionTreeClassifier
 import numpy as np
-
+import threading
+import multiprocessing 
 
 class AdaBoostClassifier(object):
     def __init__(self):
@@ -8,12 +9,17 @@ class AdaBoostClassifier(object):
         self.aplhas = []
         self.weakclassifiers = []
         self.fitted = False
+        self.x_train = None
+        self.y_train = None
         self.weights = []
         self.threshold = 0
 
     def fit(self, X, y, iter):
         weights = self.init_weights(y)
-        errors_features, self.weakclassifiers = self.precompute(X, y)
+        self.x_train = X
+        self.y_train = y
+        #errors_features, self.weakclassifiers = self.precompute(X, y)
+        errors_features, self.weakclassifiers = self.precompute_parallelized_with_multiprocessing(X, y)
         self.selected_features, self.aplhas = self.train_helper(iter, errors_features, weights)
         self.threshold = (self.aplhas.sum())/2
         self.fitted = True
@@ -68,6 +74,22 @@ class AdaBoostClassifier(object):
             clf.fit(train_data.reshape(len(x_train), 1), y_train)
             errors_features.append(((np.abs(clf.predict(train_data.reshape(len(x_train), 1)) - y_train))))
             clf_features.append(clf)
+        return np.array(errors_features), clf_features
+
+    def precompute_single_clf_feature(self,feature):
+        '''computes single errors and clf for a single feature(int)'''
+        train_data = self.x_train[:, feature]
+        clf = DecisionTreeClassifier(max_depth=1)
+        clf.fit(train_data.reshape(len(self.x_train), 1), self.y_train)
+        errors_feature = ((np.abs(clf.predict(train_data.reshape(len(self.x_train), 1)) - self.y_train)))
+        return errors_feature, clf
+        
+    def precompute_parallelized_with_multiprocessing(self,x_train,y_train):
+        n_features = x_train.shape[1]
+        cpus = multiprocessing.cpu_count()
+        print(cpus)
+        pool = multiprocessing.Pool(processes=cpus)
+        errors_features, clf_features = zip(*pool.map(self.precompute_single_clf_feature, range(n_features)))
         return np.array(errors_features), clf_features
 
     def train_helper(self, iter, errors_features, weights):

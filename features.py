@@ -1,4 +1,7 @@
 import numpy as np
+from contextlib import contextmanager
+import multiprocessing
+from functools import partial
 
 
 ##       API 
@@ -12,6 +15,15 @@ def feature_extraction_images(Images, rect, no_rect):
     for i in range(len(Images)):
         Images_fe[i] = get_features(Images[i], rect)
     return Images_fe
+
+
+def par_feature_extraction_images(Images, rect, no_rect):
+    Images_fe = np.zeros((Images.shape[0], no_rect))
+    cpus = multiprocessing.cpu_count()
+    print("number_of cpus = ",cpus)
+    with poolcontext(processes=cpus) as pool:
+        Images_fe = pool.map(partial(get_features,rectangles=rect),Images)
+    return np.array(Images_fe)
 
 
 def get_features(image, rectangles):
@@ -189,3 +201,13 @@ def first_third(a, b):
 def second_third(a, b):
     sum = (a[0] + 2 * b[0], a[1] + 2 * b[1])
     return (sum[0] // 3, sum[1] // 3)
+
+
+## Template
+@contextmanager
+def poolcontext(*args, **kwargs):
+    pool = multiprocessing.Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
+
+
