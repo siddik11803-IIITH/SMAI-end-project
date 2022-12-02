@@ -11,16 +11,18 @@ class AdaBoostClassifier(object):
         self.fitted = False
         self.x_train = None
         self.y_train = None
-        self.weights = []
         self.threshold = 0
+        self.errors_features = None
 
     def fit(self, X, y, iter):
+        if (self.fitted == True) and (self.x_train is X) and (self.y_train is y):
+            pass
+        else:   
+            self.x_train = X
+            self.y_train = y
+            self.errors_features, self.weakclassifiers = self.precompute(X, y)
         weights = self.init_weights(y)
-        self.x_train = X
-        self.y_train = y
-        #errors_features, self.weakclassifiers = self.precompute(X, y)
-        errors_features, self.weakclassifiers = self.precompute_parallelized_with_multiprocessing(X, y)
-        self.selected_features, self.aplhas = self.train_helper(iter, errors_features, weights)
+        self.selected_features, self.aplhas = self.train_helper(iter, self.errors_features, weights)
         self.threshold = (self.aplhas.sum())/2
         self.fitted = True
     
