@@ -9,12 +9,14 @@ class AdaBoostClassifier(object):
         self.aplhas = []
         self.weakclassifiers = []
         self.fitted = False
-        x_trainp = None
-        y_trainp = None
+        x_train = None
+        y_train = None
 
     def fit(self, X, y, iter):
         weights = self.init_weights(y)
-        # errors_features, self.weakclassifiers = self.precompute(X, y)
+        self.x_train = X
+        self.y_train = y
+        #errors_features, self.weakclassifiers = self.precompute(X, y)
         errors_features, self.weakclassifiers = self.precompute_parallelized_with_multiprocessing(X, y)
         self.selected_features, self.aplhas = self.train_helper(iter, errors_features, weights)
         self.fitted = True
@@ -62,36 +64,19 @@ class AdaBoostClassifier(object):
 
     def precompute_single_clf_feature(self,feature):
         '''computes single errors and clf for a single feature(int)'''
-        train_data = self.x_trainp[:, feature]
+        train_data = self.x_train[:, feature]
         clf = DecisionTreeClassifier(max_depth=1)
-        clf.fit(train_data.reshape(len(self.x_trainp), 1), self.y_trainp)
-        errors_feature = ((np.abs(clf.predict(train_data.reshape(len(self.x_trainp), 1)) - self.y_trainp)))
-        return errors_feature,clf
+        clf.fit(train_data.reshape(len(self.x_train), 1), self.y_train)
+        errors_feature = ((np.abs(clf.predict(train_data.reshape(len(self.x_train), 1)) - self.y_train)))
+        return errors_feature, clf
         
-    # def precompute_parallelized_with_threads(self,x_train,y_train):
-    #     n_features = x_train.shape[1]
-    #     errors_features = [] # errors_features[j][i] = |h_j(x_i) - y_i|
-    #     clf_features = []
-    #     thread = threading.Thread(target=self.precompute_single_clf_feature)
-    #     thread.start()
-    #     return np.array(errors_features), clf_features
-    
     def precompute_parallelized_with_multiprocessing(self,x_train,y_train):
-        self.x_trainp = x_train.copy()
-        self.y_trainp = y_train.copy()
         n_features = x_train.shape[1]
-        try: 
-            cpus = multiprocessing.cpu_count()
-        except NotImplementedError:
-            cpus = 2
-
-        print("Number of CPUs = ", cpus)
-        cpus = 4 # presently taking only 4 CPUs
-
+        cpus = multiprocessing.cpu_count()
+        print(cpus)
         pool = multiprocessing.Pool(processes=cpus)
-        errors_features,clf_features = zip(*pool.map(self.precompute_single_clf_feature,range(n_features)))
-    
-        return np.array(errors_features),clf_features
+        errors_features, clf_features = zip(*pool.map(self.precompute_single_clf_feature, range(n_features)))
+        return np.array(errors_features), clf_features
 
     def train_helper(self, iter, errors_features, weights):
         #weight_obs = []
