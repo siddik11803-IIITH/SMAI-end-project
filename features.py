@@ -1,17 +1,36 @@
 import numpy as np
-
-
-##       API 
-#  get_features()
-#      - input: grey scale image 24*24, numpy 2d array 
-#      - output: numpy 1d array of features 
-
+import multiprocessing 
+from functools import partial
+from contextlib import contextmanager
 
 def feature_extraction_images(Images, rect, no_rect):
     Images_fe = np.zeros((Images.shape[0], no_rect))
     for i in range(len(Images)):
         Images_fe[i] = get_features(Images[i], rect)
     return Images_fe
+
+@contextmanager
+def poolcontext(*args, **kwargs):
+    pool = multiprocessing.Pool(*args, **kwargs)
+    yield pool
+    pool.terminate()
+
+def par_feature_extraction_images(Images, rect, no_rect):
+
+    Images_fe = np.zeros((Images.shape[0], no_rect))
+    
+    try: 
+        cpus = multiprocessing.cpu_count()
+    except NotImplementedError:
+        cpus = 2
+    print("number_of cpus = ",cpus)
+    # pool = multiprocessing.Pool(processes=cpus)
+    with poolcontext(processes=cpus) as pool:
+        # Images_fe = pool.map_async(partial(get_features,rectangles=rect),Images)
+        Images_fe = pool.map(partial(get_features,rectangles=rect),Images)
+        # Images_fe.wait()
+    # Images_fe = pool.map(get_features,Images,rect)
+    return np.array(Images_fe)
 
 
 def get_features(image, rectangles):

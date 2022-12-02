@@ -7,7 +7,7 @@ from numba import jit,int32
 #      - output: numpy 1d array of features 
 
 @jit(nopython=True, parallel=True)
-def feature_extraction_images(Images, rect, no_rect):
+def par_feature_extraction_images(Images, rect, no_rect):
     Images_fe = np.zeros((Images.shape[0], no_rect))
     for i in range(len(Images)):
         Images_fe[i] = get_features(Images[i], rect)
