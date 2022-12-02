@@ -50,7 +50,7 @@ class AdaBoostClassifier(object):
         y_pred = self.predict(X_test)
         return np.sum(y_pred == y_test)/len(y_test)
     
-    def detection_rate(self,X_test,y_test):
+    def detection_rate(self, X_test, y_test):
         y_pred = self.predict(X_test)
         return np.sum((y_pred == 1) & (y_test == 1))/len(y_test)
 
