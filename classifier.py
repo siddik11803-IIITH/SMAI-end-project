@@ -9,8 +9,10 @@ class AdaBoostClassifier(object):
         self.aplhas = []
         self.weakclassifiers = []
         self.fitted = False
-        x_train = None
-        y_train = None
+        self.x_train = None
+        self.y_train = None
+        self.weights = []
+        self.threshold = 0
 
     def fit(self, X, y, iter):
         weights = self.init_weights(y)
@@ -19,7 +21,11 @@ class AdaBoostClassifier(object):
         #errors_features, self.weakclassifiers = self.precompute(X, y)
         errors_features, self.weakclassifiers = self.precompute_parallelized_with_multiprocessing(X, y)
         self.selected_features, self.aplhas = self.train_helper(iter, errors_features, weights)
+        self.threshold = (self.aplhas.sum())/2
         self.fitted = True
+    
+    def set_threshold(self, threshold):
+        self.threshold = threshold    
 
     def predict(self, X_test):
         if(self.fitted == False):
@@ -32,7 +38,7 @@ class AdaBoostClassifier(object):
                 for feature in self.selected_features:
                     label = self.weakclassifiers[feature].predict(X_test[index][feature].reshape(1,1))
                     lables.append(label)
-                if self.aplhas.dot(lables) >= (self.aplhas.sum())/2:
+                if self.aplhas.dot(lables) >= self.threshold:
                     y_pred[index] = 1
                 else:
                     y_pred[index] = 0
@@ -41,6 +47,14 @@ class AdaBoostClassifier(object):
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
         return np.sum(y_pred == y_test)/len(y_test)
+    
+    def detection_rate(self,X_test,y_test):
+        y_pred = self.predict(X_test)
+        return np.sum((y_pred == 1) & (y_test == 1))/len(y_test)
+
+    def false_positive_rate(self, X_test, y_test):
+        y_pred = self.predict(X_test)
+        return np.sum((y_pred == 1) & (y_test == 0))/np.sum(y_test == 0)
 
     def init_weights(self, y):
         weights = np.zeros(y.shape)
@@ -99,3 +113,4 @@ class AdaBoostClassifier(object):
         
         alphas =  -np.log(betas)
         return selected_idx, alphas 
+        
