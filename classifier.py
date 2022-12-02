@@ -109,9 +109,12 @@ class AdaBoostClassifier(object):
             beta_t = (e_t)/(1 - e_t)
             
             weights = weights * (beta_t ** (1 - errors))
-            
-            selected_idx.append(min_idx)
-            betas.append(beta_t)
+
+            if(abs(beta_t - 0) < 1e-9):
+                break
+            else:
+                selected_idx.append(min_idx)
+                betas.append(beta_t)
         
         alphas =  -np.log(betas)
         return selected_idx, alphas 
