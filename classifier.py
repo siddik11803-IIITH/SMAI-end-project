@@ -21,7 +21,12 @@ class AdaBoostClassifier(object):
             self.x_train = X
             self.y_train = y
             self.errors_features, self.weakclassifiers = self.precompute(X, y)
-        weights = self.init_weights(y)
+
+        if(np.sum(y == 1) * np.sum(y == 0) == 0):
+            weights = np.ones(y.shape)
+        else:
+            weights = self.init_weights(y)
+
         self.selected_features, self.aplhas = self.train_helper(iter, self.errors_features, weights)
         self.threshold = (self.aplhas.sum())/2
         self.fitted = True
@@ -52,7 +57,7 @@ class AdaBoostClassifier(object):
     
     def detection_rate(self, X_test, y_test):
         y_pred = self.predict(X_test)
-        return np.sum((y_pred == 1) & (y_test == 1))/len(y_test)
+        return np.sum((y_pred == 1) & (y_test == 1))/np.sum(y_test == 1)
 
     def false_positive_rate(self, X_test, y_test):
         y_pred = self.predict(X_test)
@@ -106,15 +111,12 @@ class AdaBoostClassifier(object):
             min_idx = np.argmin(round_errors)
             e_t = round_errors[min_idx]
             errors = errors_features[min_idx] # contains 1 or 0.
-            beta_t = (e_t)/(1 - e_t)
+            beta_t = (e_t)/(1 - e_t) + 1e-18
             
             weights = weights * (beta_t ** (1 - errors))
 
-            if(abs(beta_t - 0) < 1e-9):
-                break
-            else:
-                selected_idx.append(min_idx)
-                betas.append(beta_t)
+            selected_idx.append(min_idx)
+            betas.append(beta_t)
         
         alphas =  -np.log(betas)
         return selected_idx, alphas 
