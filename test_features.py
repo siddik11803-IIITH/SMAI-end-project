@@ -91,7 +91,7 @@ def complete_test():
     for a, b, c, d in (rectangles_even + rectangles_odd):
         test_area_rectangle(a, b, c, d, int_image)
 
-    test_nth_feature(np.ones((l, l)))
+    test_nth_feature(np.ones((19, 19)))
     return
 
 
