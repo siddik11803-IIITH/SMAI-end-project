@@ -2,6 +2,7 @@ from sklearn.tree import DecisionTreeClassifier
 import numpy as np
 import threading
 import multiprocessing 
+import features as fe
 
 class AdaBoostClassifier(object):
     def __init__(self):
@@ -13,6 +14,7 @@ class AdaBoostClassifier(object):
         self.y_train = None
         self.threshold = 0
         self.errors_features = None
+        self.rects = fe.get_rectanges(19, 19)
 
     def fit(self, X, y, iter):
         if (self.fitted == True) and (self.x_train is X) and (self.y_train is y):
@@ -50,7 +52,28 @@ class AdaBoostClassifier(object):
                 else:
                     y_pred[index] = 0
             return y_pred
-        
+
+    def predict_img(self, X_test_img):
+        if(self.fitted == False):
+            print("Model not fitted")
+            return
+        else:
+            y_pred = np.zeros(len(X_test_img))
+            for index in range(len(y_pred)):
+                int_image = fe.caliculate_intergral_image(X_test_img[index])
+                lables = []
+                for feature in self.selected_features:
+                    feature_val = fe.get_nth_feature(int_image, self.rects, feature)
+                    label = self.weakclassifiers[feature].predict(np.array([feature_val]).reshape(1,1))
+                    lables.append(label)
+                if self.aplhas.dot(lables) >= self.threshold:
+                    y_pred[index] = 1
+                else:
+                    y_pred[index] = 0
+            return y_pred
+
+
+
     def score(self, X_test, y_test):
         y_pred = self.predict(X_test)
         return np.sum(y_pred == y_test)/len(y_test)
