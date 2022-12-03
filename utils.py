@@ -2,7 +2,7 @@ import PIL, os, pickle
 import numpy as np
 import features as fe
 from PIL import Image
-
+from sklearn.model_selection import train_test_split
 
 
 def get_test_train_data():
@@ -62,3 +62,42 @@ def random_subset(Images, lables, N):
     sub_labels = lables[index]
     return sub_images, sub_labels
 
+
+def Create_data(Dataset_Size):
+    rect = fe.get_rectanges(19, 19)
+    no_rect = fe.get_no_rectangles(19, 19)
+    X_train_face_img, X_train_nonface_img, X_test_img, y_train_face, y_train_nonface, y_test = get_test_train_data()
+    X_train_sub_nonface_img, y_train_sub_nonface = random_subset(X_train_nonface_img, y_train_nonface, len(X_train_face_img))
+    assert(len(X_train_face_img) == len(X_train_sub_nonface_img))
+    assert(len(y_train_face) == len(y_train_sub_nonface))
+    assert(len(X_train_face_img) == len(y_train_face))
+    assert(len(X_train_sub_nonface_img) == len(y_train_sub_nonface))
+
+    X_train_img = np.concatenate((X_train_face_img, X_train_sub_nonface_img))
+    y_train = np.concatenate((y_train_face, y_train_sub_nonface))
+
+    X_data, y_data = random_subset(X_train_img, y_train, Dataset_Size)
+    X_data_fe = fe.par_feature_extraction_images(X_data, rect, no_rect)
+    return X_data_fe, y_data
+    
+
+def Create_data_imgs(Dataset_Size):
+    rect = fe.get_rectanges(19, 19)
+    no_rect = fe.get_no_rectangles(19, 19)
+    X_train_face_img, X_train_nonface_img, X_test_img, y_train_face, y_train_nonface, y_test = get_test_train_data()
+    X_train_sub_nonface_img, y_train_sub_nonface = random_subset(X_train_nonface_img, y_train_nonface, len(X_train_face_img))
+    assert(len(X_train_face_img) == len(X_train_sub_nonface_img))
+    assert(len(y_train_face) == len(y_train_sub_nonface))
+    assert(len(X_train_face_img) == len(y_train_face))
+    assert(len(X_train_sub_nonface_img) == len(y_train_sub_nonface))
+
+    X_train_img = np.concatenate((X_train_face_img, X_train_sub_nonface_img))
+    y_train = np.concatenate((y_train_face, y_train_sub_nonface))
+
+    X_data, y_data =random_subset(X_train_img, y_train, Dataset_Size)
+    X_data_fe = fe.par_feature_extraction_images(X_data, rect, no_rect)
+    return X_data_fe, X_data, y_data
+ 
+
+def Split_Data(X_data, y_data):
+    return train_test_split(X_data, y_data, test_size=0.2)
