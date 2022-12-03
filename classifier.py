@@ -59,6 +59,10 @@ class AdaBoostClassifier(object):
         y_pred = self.predict(X_test)
         return np.sum((y_pred == 1) & (y_test == 1))/np.sum(y_test == 1)
 
+    def false_negative_rate(self, X_test, y_test):
+        y_pred = self.predict(X_test)
+        return np.sum((y_pred == 0) & (y_test == 1))/np.sum(y_test == 1)
+        
     def false_positive_rate(self, X_test, y_test):
         y_pred = self.predict(X_test)
         return np.sum((y_pred == 1) & (y_test == 0))/np.sum(y_test == 0)
