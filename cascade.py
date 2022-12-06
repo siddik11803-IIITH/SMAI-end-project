@@ -43,6 +43,13 @@ def Cascade_Classifier_predict_Img(X_test_img, y_test, Strong_Classifiers):
     return ans
 
 
+def Cascade_Classifier_predict_single_Img(X_test_img, y_test, Strong_Classifiers):
+    assert(X_test_img.ndim == 2)
+    X_test_simage = X_test_img
+    X_test_simage.reshape(1, X_test_img.shape[0], X_test_img.shape[1])
+
+    return Cascade_Classifier_predict_Img(X_test_simage, y_test, Strong_Classifiers)[0]
+
 
 def Cascade_Classifier(X_test,y_test, Strong_Classifiers):
     y_pred = Cascade_Classifier_predict(X_test, y_test, Strong_Classifiers)
