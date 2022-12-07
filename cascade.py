@@ -24,6 +24,8 @@ def Cascade_Classifier_predict(X_test, y_test, Strong_Classifiers):
 
 
 def Cascade_Classifier_predict_Img(X_test_img, y_test, Strong_Classifiers):
+    #print(X_test_img.ndim)
+    assert(X_test_img.ndim == 3)
     y_preds = []
     for i in range((len(Strong_Classifiers))):
         y_pred = Strong_Classifiers[i].predict_img(X_test_img)
@@ -45,10 +47,30 @@ def Cascade_Classifier_predict_Img(X_test_img, y_test, Strong_Classifiers):
 
 def Cascade_Classifier_predict_single_Img(X_test_img, y_test, Strong_Classifiers):
     assert(X_test_img.ndim == 2)
-    X_test_simage = X_test_img
-    X_test_simage.reshape(1, X_test_img.shape[0], X_test_img.shape[1])
+    assert(X_test_img.shape == (19, 19))
+    X_test_simage = X_test_img.reshape((1, X_test_img.shape[0], X_test_img.shape[1]))
+    assert(X_test_simage.ndim == 3)
 
     return Cascade_Classifier_predict_Img(X_test_simage, y_test, Strong_Classifiers)[0]
+
+
+def Cascade_predict_opt(X_test_simg, y_test_dummy, Strong_Classifiers):
+    assert(X_test_simg.shape == (19, 19))
+    nf = 0
+    X_test_img = X_test_simg.reshape((1, X_test_simg.shape[0], X_test_simg.shape[1])) 
+    Rejected = False
+    for i in range(len(Strong_Classifiers)):
+        inter_label = Strong_Classifiers[i].predict_img(X_test_img)[0]
+        nf += len(Strong_Classifiers[i].aplhas)
+        if inter_label == 0:
+            Rejected = True
+            break
+    label = None
+    if Rejected == False:
+        label = 1
+    else:
+        label = 0
+    return label, nf
 
 
 def Cascade_Classifier(X_test,y_test, Strong_Classifiers):
