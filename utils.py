@@ -3,8 +3,8 @@ import numpy as np
 import features as fe
 from PIL import Image
 from sklearn.model_selection import train_test_split
-
-
+import math
+import unittest as un
 def get_test_train_data():
     train_face_dir= "Data/faces/face.train/train/face/"
     train_nonface_dir = "Data/faces/face.train/train/non-face/"
@@ -76,7 +76,9 @@ def Create_data(Dataset_Size):
     X_train_img = np.concatenate((X_train_face_img, X_train_sub_nonface_img))
     y_train = np.concatenate((y_train_face, y_train_sub_nonface))
 
-    X_data, y_data = random_subset(X_train_img, y_train, Dataset_Size)
+    X_data, y_data = random_subset(X_train_img, y_train, Dataset_Size)   
+    for i in range(len(X_data)):
+        X_data[i] = Normalize_image(X_data[i])
     X_data_fe = fe.par_feature_extraction_images(X_data, rect, no_rect)
     return X_data_fe, y_data
     
@@ -95,9 +97,20 @@ def Create_data_imgs(Dataset_Size):
     y_train = np.concatenate((y_train_face, y_train_sub_nonface))
 
     X_data, y_data =random_subset(X_train_img, y_train, Dataset_Size)
+    for i in range(len(X_data)):
+        X_data[i] = Normalize_image(X_data[i])
     X_data_fe = fe.par_feature_extraction_images(X_data, rect, no_rect)
     return X_data_fe, X_data, y_data
  
 
 def Split_Data(X_data, y_data):
     return train_test_split(X_data, y_data, test_size=0.2)
+
+def Normalize_image(image):
+    # normalize image with mean and std
+    image = image.astype(np.float32)
+    image = image / 255.0
+    if(np.std(image) == 0):
+        return image - np.mean(image)
+    image = (image - np.mean(image)) / np.std(image)
+    return image
