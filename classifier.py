@@ -3,7 +3,6 @@ import numpy as np
 import threading
 import multiprocessing 
 import features as fe
-import utils as ut
 
 class AdaBoostClassifier(object):
     def __init__(self):
@@ -60,8 +59,8 @@ class AdaBoostClassifier(object):
             return
         else:
             y_pred = np.zeros(len(X_test_img))
-            for index in range(len(y_pred)):                
-                int_image = fe.caliculate_intergral_image(ut.Normalize_image(X_test_img[index]))
+            for index in range(len(y_pred)):
+                int_image = fe.caliculate_intergral_image(X_test_img[index])
                 lables = []
                 for feature in self.selected_features:
                     feature_val = fe.get_nth_feature(int_image, self.rects, feature)
