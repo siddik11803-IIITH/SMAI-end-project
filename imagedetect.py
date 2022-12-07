@@ -203,7 +203,7 @@ print("Cascade loaded")
 
 
 #image reading
-img = cv2.imread("end-to-end-window/test2.jpeg")
+img = cv2.imread("full_size_images/test3.jpeg")
 print(img.shape)
 
 scale_percent = 22 # percent of original size
@@ -218,5 +218,5 @@ print(image.shape)
 cv2.imwrite('end-to-end-window/test_resized.jpg', image)
 
 boxed, time = Draw_Boxes_on_face(image, cascade)
-cv2.imwrite('end-to-end-window/test_boxed.jpg', boxed)
+cv2.imwrite('full_size_images/test_boxed.jpg', boxed)
 print(time)
